@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  WALKER
+}
+
+enum SubscriptionStatus {
+  INACTIVE
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum WalletTransactionType {
+  TOPUP
+  BOOKING_DEBIT
+  REFUND
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  role          Role
+  createdAt     DateTime @default(now())
+
+  walkerProfile WalkerProfile?
+  wallet        Wallet?
+  bookingsAsOwner  Booking[] @relation("OwnerBookings")
+  bookingsAsWalker Booking[] @relation("WalkerBookings")
+}
+
+model WalkerProfile {
+  id                   String              @id @default(cuid())
+  userId               String              @unique
+  user                 User                @relation(fields: [userId], references: [id])
+  bio                  String?
+  stripeAccountId      String?
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  subscriptionStatus   SubscriptionStatus  @default(INACTIVE)
+  isAvailable          Boolean             @default(true)
+  zoneId               String?
+  zone                 Zone?               @relation(fields: [zoneId], references: [id])
+  createdAt            DateTime            @default(now())
+}
+
+model Zone {
+  id        String   @id @default(cuid())
+  name      String
+  city      String
+  // prices stored in cents to avoid float rounding issues
+  price30   Int
+  price60   Int
+  createdAt DateTime @default(now())
+
+  bookings  Booking[]
+  walkers   WalkerProfile[]
+
+  @@unique([name, city])
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  ownerId   String   @unique
+  owner     User     @relation(fields: [ownerId], references: [id])
+  // balance stored in cents
+  balance   Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  transactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id                    String                @id @default(cuid())
+  walletId              String
+  wallet                Wallet                @relation(fields: [walletId], references: [id])
+  type                  WalletTransactionType
+  amount                Int
+  balanceAfter          Int
+  stripePaymentIntentId String?
+  bookingId             String?
+  createdAt             DateTime              @default(now())
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  ownerId         String
+  owner           User          @relation("OwnerBookings", fields: [ownerId], references: [id])
+  walkerId        String?
+  walker          User?         @relation("WalkerBookings", fields: [walkerId], references: [id])
+  zoneId          String
+  zone            Zone          @relation(fields: [zoneId], references: [id])
+  durationMinutes Int
+  // price paid in cents, snapshot at booking time so later zone price changes don't retroactively change it
+  price           Int
+  status          BookingStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+  acceptedAt      DateTime?
+  completedAt     DateTime?
+}

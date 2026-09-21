@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "PawnWalking",
+    "slug": "pawnwalking",
+    "scheme": "pawnwalking",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pawnwalking.app"
+    },
+    "android": {
+      "package": "com.pawnwalking.app"
+    },
+    "extra": {
+      "apiUrl": "http://localhost:3000"
+    }
+  }
+}
