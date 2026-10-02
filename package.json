@@ -11,6 +11,16 @@
     "build:web": "npm run build -w apps/web",
     "db:generate": "npm run generate -w packages/db",
     "db:push": "npm run push -w packages/db",
-    "db:seed": "npm run seed -w packages/db"
+    "db:seed": "npm run seed -w packages/db",
+    "higgsfield:example": "tsx index.ts"
+  },
+  "dependencies": {
+    "@higgsfield/client": "^0.2.6",
+    "dotenv": "^18.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
   }
 }
