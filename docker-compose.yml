@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pawnwalking
+      POSTGRES_PASSWORD: pawnwalking
+      POSTGRES_DB: pawnwalking
+    ports:
+      - "5432:5432"
+    volumes:
+      - pawnwalking-db:/var/lib/postgresql/data
+
+volumes:
+  pawnwalking-db:

@@ -68,24 +68,39 @@ varies by neighbourhood. See `packages/db/prisma/seed.ts` to add/edit zones.
 
 ## Running it locally
 
+You'll need [Node.js 20+](https://nodejs.org) and [Docker](https://docker.com) (for
+Postgres - skip Docker and point `DATABASE_URL` at any other Postgres instance if you
+already have one).
+
 ### 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Set up Postgres + env vars
+### 2. Start Postgres
 
-Copy `.env.example` to `.env` in the repo root and fill in:
+```bash
+docker compose up -d
+```
 
-- `DATABASE_URL` - any Postgres instance (local, Supabase, Neon, etc.)
-- `SESSION_SECRET` - any long random string
-- `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` - from your Stripe **test mode**
-  dashboard
-- `STRIPE_WALKER_SUBSCRIPTION_PRICE_ID` - create a $9/mo recurring Price in Stripe
-  Billing first, then paste its ID here
+### 3. Set up env vars
 
-Then push the schema and seed the starter zones:
+Copy `.env.example` to `.env` - **in three places** (Next.js and Prisma each only read
+`.env` from their own package directory, not the repo root):
+
+```bash
+cp .env.example .env
+cp .env.example apps/web/.env
+cp .env.example packages/db/.env
+```
+
+The defaults in `.env.example` already match `docker-compose.yml`, so nothing needs
+editing to get a working local database. Leave the `STRIPE_*` values as placeholders
+for now - the app runs fine without them, the wallet top-up / subscribe buttons will
+just show an error until real Stripe test keys are added.
+
+### 4. Push the schema and seed the starter zones
 
 ```bash
 npm run db:generate
@@ -93,7 +108,7 @@ npm run db:push
 npm run db:seed
 ```
 
-### 3. Run the web app
+### 5. Run the web app
 
 ```bash
 npm run dev:web
@@ -106,7 +121,7 @@ top-ups, subscription status), run the Stripe CLI alongside it:
 stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
-### 4. Run the mobile app
+### 6. Run the mobile app
 
 ```bash
 cd apps/mobile
